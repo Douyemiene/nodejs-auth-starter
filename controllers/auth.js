@@ -1,8 +1,9 @@
-const db = require('../dbconfig')
+const db = require('../dbsetting')
 const {isEmail,isEmpty} =  require('validator')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const saltRounds = 10;
+
 
 const handleErrors = (err) => {
     if(err.code === '23505')
@@ -71,21 +72,25 @@ module.exports.login = (req,res) => {
                 res.status(400).json({error:'Incorrect email or password'})
             }else{ 
                 //compare password
-                //console.log()
-                const match = await bcrypt.compare(password, user[0].password);
-                const userObj = {name:user[0].name,email:user[0].email }
-                if(match){
-                    res.status(201).json({userObj})
-                    //create a jwt and send that as response in a cookie
-                }
-                else{res.status(400).json({error:'Incorect email or password'})}}    
-            const token = createToken(user[0].email)
-            res.cookie('jwt',token, {httpOnly: true, maxAge: maxAge * 1000})  
+                    const match = await bcrypt.compare(password, user[0].password);
+                    const userObj = {name:user[0].name,email:user[0].email }
+                    if(match){
+                        const token = createToken(user[0].email)
+                        res.cookie('jwt',token, {httpOnly: true, maxAge: maxAge * 1000})  
+                        res.status(201).end()
+                    }
+                    else{
+                        res.status(400).json({error:'Incorect email or password'})
+                    }
+                
+                
+            }    
+            
         })
-        .catch(err => {res.status(400).json({error:'Cannot login at this time'})})
+        .catch(err => {console.log(err)
+            res.status(400).json({error:'Cannot login at this time'})})
     }
 
-    console.log(email, password)
 }
 
 module.exports.logout = (req,res) => {
